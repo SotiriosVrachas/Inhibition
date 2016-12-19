@@ -20,15 +20,13 @@ sudo dpkg-reconfigure locales
 
 # set up jack
 sudo apt-get install jackd2
-sudo nano /etc/dbus-1/system.conf
-#(add the following just just before the </busconfig> 
-<policy user="root">
-<allow own="org.freedesktop.ReserveDevice1.Audio0"/>
-</policy>
-# (if you plan to use an external usb soundcard add these too)
-<policy user="root">
-<allow own="org.freedesktop.ReserveDevice1.Audio1"/>
-</policy>
+sed -i '$i \<policy user="root">\
+<allow own="org.freedesktop.ReserveDevice1.Audio0"/>\
+</policy>' /etc/dbus-1/system.conf
+# if you plan to use an external usb soundcard use this too
+sed -i '$i \<policy user="root">\
+<allow own="org.freedesktop.ReserveDevice1.Audio1"/>\
+</policy>' /etc/dbus-1/system.conf
 
 # to test
 sudo su
@@ -38,11 +36,9 @@ jackd -P75 -dalsa -Phw:0 -p1024 -n3 -s -r44100 -S &
 #(if you experience Xruns try with a bigger block size)
 
 # optional, set up RT priority for Jack
-sudo nano /etc/security/limits.conf
-#(add these to the end))
-@realtime   -  rtprio     99
-@realtime   -  memlock    unlimited
 sudo su
+echo "@realtime   -  rtprio     99
+@realtime   -  memlock    unlimited" >> /etc/security/limits.conft
 groupadd realtime
 usermod -a -G realtime root
 usermod -a -G realtime chip
