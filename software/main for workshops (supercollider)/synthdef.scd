@@ -29,9 +29,22 @@ SynthDef(\osc, { // modulated sine
 
 Server.default.sync;
 
-SynthDef(\master, { arg amp = 0.15, in = 0;
+SynthDef(\master, { arg amp = 0.13, in = 0;
 	var sound = In.ar(in,2) * amp;
 	Out.ar(0, sound);
 }).add;
 
 Server.default.sync;
+
+SynthDef(\brainwave, {|prime = 200, diff = 10, fade = 15, primetime = 20, difftime = 30, level= 0.4, gate = 1, pan = 1, out=0|	
+	var freqtransition = VarLag.kr(prime, primetime, 0, \lin); 	
+	var links = SinOsc.ar(freqtransition); 	
+	var rechts = SinOsc.ar(freqtransition - VarLag.kr(diff, difftime, 0, \lin)); 	
+	var env = EnvGen.kr(Env.asr(fade, level, fade), gate, doneAction:2);	
+	var signal = [links, rechts] * env;
+	signal = Pan2.ar(signal, SinOsc.kr(pan, Rand(0,pi)));
+	Out.ar(out, signal);
+}).add;
+
+Server.default.sync;
+
