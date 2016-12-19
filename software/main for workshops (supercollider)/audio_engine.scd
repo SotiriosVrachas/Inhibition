@@ -16,12 +16,16 @@ var master_channel = 35;
 	~previous_signal = Signal.newClear(128); 
 	~parameters = Dictionary[ // random init values just in case
 		(\duration -> 20),
-		(\vibRate -> 0),
 		(\density -> 1),
 		(\pan -> 1),
-		(\vibRange -> 0),
 		(\amp -> 0.4),
 		(\target -> 7),
+		(\prime -> 65),
+		(\diff -> 25),
+		(\fade -> 5),
+		(\primetime -> 25),
+		(\difftime -> 25),
+		(\level -> 0.4),
 	];
 	~run = false; // flag
 	~parametrise = { arg action; // action should be a Dictionary with indices to select among ... plus the detected eeg pitch
@@ -73,24 +77,18 @@ Routine({
 		var target_frequency = parameters[\target];
 		if (~audio_engine[\run]) {
 			var wait = parameters[\duration];
-			parameters[\density].do{
+			1.do{
 				var freq;
-				var timbre = [\eeg_osc,\osc].wchoose([0.3,0.7]);
-				if (target_frequency > 9 ) { 
-						freq = target_frequency * [10,100,1000].choose;
-					} {
-						freq = target_frequency * [40,200,2000].choose;
-					};
-				if (freq > 120 ) {
-					freq = [freq,freq+target_frequency]; // create a beat if possible
-				};
-				freq.do {arg f;
-					Synth(timbre, // randomly choose a vosc or osc
-						[   \freq, f, \vibRate, parameters[\vibRate], \dur, wait * 1.4,
-								\out, master_channel,\pan, parameters[\pan],
-								\vibRange, f * parameters[\vibRange],\amp, parameters[\amp]
-							],~audio_engine[\group].asTarget);
-				}
+				var timbre = \brainwave;
+				Synth(timbre, // randomly choose a vosc or os
+					[   \level, parameters[\level],
+						\prime, parameters[\prime],
+						\diff, parameters[\diff],
+						\fade, wait * 0.7,
+						\primetime, parameters[\primetime],
+						\difftime, parameters[\difftime],
+						\out, master_channel, \pan, parameters[\pan]
+					],~audio_engine[\group].asTarget);
 			};
 			wait.wait;
 		} {
